@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-//import 'package:crypto/crypto.dart';
+import 'package:crypto/crypto.dart';
 import 'dart:convert';
 
 class AppDatabase { 
@@ -140,4 +140,12 @@ class AppDatabase {
     return _database!;
   }
 
+  String _encode(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
 }
+
+
