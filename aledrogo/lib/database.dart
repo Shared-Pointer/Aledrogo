@@ -67,16 +67,77 @@ class AppDatabase {
   }
 
   Future<void> _createDB(Database db, int version) async {
-
-  }
+    await db.execute('''
+      CREATE TABLE $users_table (
+        $users_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $users_name TEXT NOT NULL UNIQUE,
+        $users_email TEXT NOT NULL UNIQUE,
+        $users_password TEXT NOT NULL
+      )
+      ''');
+    
+    await db.execute('''
+      CREATE TABLE $users_data_table (
+        $users_data_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $users_data_user_id INTEGER NOT NULL,
+        $users_data_city TEXT NOT NULL,
+        $users_data_street TEXT NOT NULL,
+        $users_data_house_number TEXT NOT NULL,
+        $users_data_phone_number TEXT NOT NULL,
+        $users_data_postal_code TEXT NOT NULL,
+        $users_data_saldo REAL,
+        FOREIGN KEY ($users_data_user_id) REFERENCES $users_table($users_id)
+      )
+      ''');
+    
+    await db.execute('''
+      CREATE TABLE $items_table (
+        $items_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $items_seller_id INTEGER NOT NULL,
+        $items_title TEXT NOT NULL,
+        $items_description TEXT,
+        $items_price REAL NOT NULL,
+        $items_category TEXT,
+        $items_quantity INTEGER,
+        $items_image TEXT,
+        $items_is_auction INTEGER,
+        $items_end_date TEXT,
+        FOREIGN KEY ($items_seller_id) REFERENCES $users_table($users_id)
+      )
+      ''');
+    
+    await db.execute('''
+      CREATE TABLE $transactions_table (
+        $transactions_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $transactions_buyer_id INTEGER NOT NULL,
+        $transactions_seller_id INTEGER NOT NULL,
+        $transactions_item_id INTEGER NOT NULL,
+        $transactions_price REAL NOT NULL,
+        $transactions_date TEXT NOT NULL,
+        FOREIGN KEY ($transactions_buyer_id) REFERENCES $users_table($users_id),
+        FOREIGN KEY ($transactions_seller_id) REFERENCES $users_table($users_id),
+        FOREIGN KEY ($transactions_item_id) REFERENCES $items_table($items_id)
+      )
+      ''');
+    
+    await db.execute('''
+      CREATE TABLE $auctions_table (
+        $auctions_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $auctions_item_id INTEGER NOT NULL,
+        $auctions_buyer_id INTEGER NOT NULL,
+        $auctions_price REAL NOT NULL,
+        $auctions_date TEXT NOT NULL,
+        FOREIGN KEY ($auctions_item_id) REFERENCES $items_table($items_id),
+        FOREIGN KEY ($auctions_buyer_id) REFERENCES $users_table($users_id)
+      )
+      ''');
+    
+    }
   Future<Database> get database async {
     if (_database != null) return _database!;
 
     _database = await _initDB('aledrogo.db');
     return _database!;
   }
-
-
-
 
 }
