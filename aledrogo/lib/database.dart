@@ -146,6 +146,94 @@ class AppDatabase {
     return digest.toString();
   }
 
+  Future<int> addUser(String name, String email, String password) async{
+    final db = await database;
+    final success = await db.insert(users_table, {
+      users_name: name,
+      users_email: email,
+      users_password: _encode(password)
+    });
+    return success;
+  }
+
+  Future<int> addUserData(int userId, String city, String street, String houseNumber, String phoneNumber, String postalCode, double saldo) async{
+    final db = await database;
+    final success = await db.insert(users_data_table, {
+      users_data_user_id: userId,
+      users_data_city: city,
+      users_data_street: street,
+      users_data_house_number: houseNumber,
+      users_data_phone_number: phoneNumber,
+      users_data_postal_code: postalCode,
+      users_data_saldo: saldo
+    });
+    return success;
+  }
+
+  Future<int> addItems(int sellerId, String title, String description, double price, String category, int quantity, String image, int isAuction, String endDate) async{
+    final db = await database;
+    final success = await db.insert(items_table, {
+      items_seller_id: sellerId,
+      items_title: title,
+      items_description: description,
+      items_price: price,
+      items_category: category,
+      items_quantity: quantity,
+      items_image: image,
+      items_is_auction: isAuction,
+      items_end_date: endDate
+    });
+    return success;
+  }
+
+  Future<int> addTransaction(int buyerId, int sellerId, int itemId, double price, String date) async{
+    final db = await database;
+    final success = await db.insert(transactions_table, {
+      transactions_buyer_id: buyerId,
+      transactions_seller_id: sellerId,
+      transactions_item_id: itemId,
+      transactions_price: price,
+      transactions_date: date
+    });
+    return success;
+  }
+
+  Future<int> addAuction(int itemId, int buyerId, double price, String date) async{
+    final db = await database;
+    final success = await db.insert(auctions_table, {
+      auctions_item_id: itemId,
+      auctions_buyer_id: buyerId,
+      auctions_price: price,
+      auctions_date: date
+    });
+    return success;
+  }
+  // dlla wyjaśnienia, Lista dlatego bo baza może zwrócić wiele rekordów, mapa dlatego bo każdy rekord to string czyli nazwa kolumny a dynamic to wartość kolumny
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    final db = await database;
+    return db.query(users_table);
+  }
+
+  Future<List<Map<String, dynamic>>> getUserData(int userId) async {
+    final db = await database;
+    return db.query(users_data_table, where: '$users_data_user_id = ?', whereArgs: [userId]);
+  }
+
+  Future<List<Map<String, dynamic>>> getItems() async {
+    final db = await database;
+    return db.query(items_table);
+  }
+
+  Future<List<Map<String, dynamic>>> getTransactions() async {
+    final db = await database;
+    return db.query(transactions_table);
+  }
+
+  Future<List<Map<String, dynamic>>> getAuctions() async {
+    final db = await database;
+    return db.query(auctions_table);
+  }
+
 }
 
 

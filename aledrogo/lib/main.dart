@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart'; // Import bazy danych
-import 'package:path/path.dart'; // Import path, aby uzyskać dostęp do ścieżki/ścieżek
 
 void main() {
   runApp(const MyApp());
