@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_repository.dart';
+import 'login.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -26,6 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Rejestracja udana!")),
         );
+        Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => LoginScreen()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Błąd rejestracji!")),
