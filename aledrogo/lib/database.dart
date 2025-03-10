@@ -55,7 +55,7 @@ class AppDatabase {
   static const auctions_price = 'price';
   static const auctions_date = 'date';
 
-  static final AppDatabase _instance = AppDatabase._init(); //final oznacza że istnieje tylko jedna kopia tej instancji w całej apce
+  static final AppDatabase instance = AppDatabase._init(); //final oznacza że istnieje tylko jedna kopia tej instancji w całej apce
   static Database? _database; //nullable, bo na początku nie ma bazy
   AppDatabase._init(); //konstruktor prywatny, uniemożliwia tworzenie instancji tej klasy poza nią samą
 
@@ -140,7 +140,7 @@ class AppDatabase {
     return _database!;
   }
 
-  String _encode(String password) {
+  String encode(String password) {
     final bytes = utf8.encode(password);
     final digest = sha256.convert(bytes);
     return digest.toString();
@@ -151,7 +151,7 @@ class AppDatabase {
     final success = await db.insert(users_table, {
       users_name: name,
       users_email: email,
-      users_password: _encode(password)
+      users_password: encode(password)
     });
     return success;
   }
