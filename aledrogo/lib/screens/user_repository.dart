@@ -1,4 +1,5 @@
 import 'package:aledrogo/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // repozytorium aka posrednik miedzy danymi 
 class UserRepository {
@@ -18,7 +19,17 @@ class UserRepository {
       whereArgs: [email, hashedPassword],
     );
 
+    if (result.isNotEmpty){
+      final shared_preferences = await SharedPreferences.getInstance();
+      await shared_preferences.setString('email', email);
+    }
+
     // jezeli wynik nie jest pusty to taki user istnieje
     return result.isNotEmpty;
   }
+}
+
+Future<String?> getUserEmail() async {
+  final shared_preferences = await SharedPreferences.getInstance();
+  return shared_preferences.getString('email');
 }
