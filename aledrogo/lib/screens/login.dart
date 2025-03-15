@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'user_repository.dart';
+import 'welcome_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -7,14 +8,12 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // global key przechowuje stan formularza, i dzieki niemu walidujemy pola tekstowe
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final UserRepository _userRepository = UserRepository();
 
   void _loginUser() async {
-    // sprawdz dane z pol tekstowych
     if (_formKey.currentState!.validate()) {
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
@@ -22,8 +21,9 @@ class _LoginScreenState extends State<LoginScreen> {
       bool isLoggedIn = await _userRepository.loginUser(email, password);
 
       if (isLoggedIn) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Zalogowano!")),
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => WelcomeScreen(email: email)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
