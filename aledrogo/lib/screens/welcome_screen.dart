@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:aledrogo/database.dart';
-import 'package:aledrogo/screens/user_repository.dart';
-import 'package:aledrogo/screens/login.dart';
+import 'package:aledrogo/screens/index.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -19,11 +19,7 @@ class WelcomeScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     final sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.remove('email');
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
-      (Route<dynamic> route) => false,
-    );
+    context.go('/index');
   }
 
   @override

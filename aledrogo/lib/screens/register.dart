@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'user_repository.dart';
 import 'login.dart';
 
@@ -27,7 +28,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Rejestracja udana!")),
         );
-        Navigator.pushReplacement( context, MaterialPageRoute(builder: (context) => LoginScreen()));
+        context.go('/login');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Błąd rejestracji!")),

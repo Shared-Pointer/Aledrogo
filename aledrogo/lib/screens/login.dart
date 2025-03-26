@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'user_repository.dart';
 import 'welcome_screen.dart';
 
@@ -21,10 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
       bool isLoggedIn = await _userRepository.loginUser(email, password);
 
       if (isLoggedIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => WelcomeScreen(email: email)),
-        );
+        context.go('/welcome');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Błędny email lub hasło!")),
