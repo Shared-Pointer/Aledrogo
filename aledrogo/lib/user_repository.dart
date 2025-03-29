@@ -1,5 +1,7 @@
 import 'package:aledrogo/database.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
 
 // repozytorium aka posrednik miedzy danymi 
 class UserRepository {
@@ -32,4 +34,17 @@ class UserRepository {
 Future<String?> getUserEmail() async {
   final shared_preferences = await SharedPreferences.getInstance();
   return shared_preferences.getString('email');
+}
+
+Future<Map<String, dynamic>> getUserData() async {
+  final db = AppDatabase.instance;
+  final user = await db.getUsers();
+  final userData = await db.getUserData(user.first['id']);
+  return userData.isNotEmpty ? userData.first : {};
+}
+
+Future<void> logout(BuildContext context) async {
+  final sharedPreferences = await SharedPreferences.getInstance();
+  await sharedPreferences.remove('email');
+  context.go('/index');
 }

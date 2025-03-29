@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'user_repository.dart';
-import 'welcome_screen.dart';
+import '../user_repository.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

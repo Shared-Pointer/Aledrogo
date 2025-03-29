@@ -1,7 +1,10 @@
 import 'package:aledrogo/navbar.dart';
 import 'package:aledrogo/screens/index.dart';
+import 'package:aledrogo/screens/items_list_screen.dart';
 import 'package:aledrogo/screens/login.dart';
+import 'package:aledrogo/screens/options_screen.dart';
 import 'package:aledrogo/screens/portal_screen.dart';
+import 'package:aledrogo/screens/sell_screen.dart';
 import 'package:aledrogo/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -29,6 +32,16 @@ GoRouter goRouter() {
         name: 'login',
         builder: (context,state) => LoginScreen(), 
         ),
+      GoRoute(
+          path: '/itemsList',
+          name: 'itemsList',
+          builder: (context, state) => ItemsListScreenWithNavbar(),
+        ),
+      GoRoute(
+          path: '/SellList',
+          name: 'SellList',
+          builder: (context, state) => SellListScreenWithNavbar(),
+        ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Navbar(
           navigationShell: navigationShell,
@@ -48,7 +61,7 @@ GoRouter goRouter() {
               GoRoute(
                 path: '/portal',
                 name: 'portal',
-                builder: (context, state) => WelcomeScreenWithNavbar(),
+                builder: (context, state) => PortalScreenWithNavbar(),
               ),
             ],
           ),
@@ -57,7 +70,7 @@ GoRouter goRouter() {
               GoRoute(
                 path: '/options',
                 name: 'options',
-                builder: (context, state) => WelcomeScreenWithNavbar(),
+                builder: (context, state) => OptionsScreenWithNavbar(),
               ),
             ],
           ),
@@ -80,6 +93,82 @@ class WelcomeScreenWithNavbar extends StatelessWidget {
         } else {
           final email = snapshot.data ?? '';
           return WelcomeScreen(email: email);
+        }
+      },
+    );
+  }
+}
+
+class PortalScreenWithNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          final email = snapshot.data ?? '';
+          return PortalScreen(email: email);
+        }
+      },
+    );
+  }
+}
+
+class OptionsScreenWithNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          final email = snapshot.data ?? '';
+          return OptionsScreen(email: email);
+        }
+      },
+    );
+  }
+}
+
+class ItemsListScreenWithNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          final email = snapshot.data ?? '';
+          return ItemsListScreen(email: email);
+        }
+      },
+    );
+  }
+}
+
+class SellListScreenWithNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          final email = snapshot.data ?? '';
+          return SellListScreen(email: email);
         }
       },
     );

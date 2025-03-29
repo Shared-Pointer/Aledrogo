@@ -1,7 +1,5 @@
 import 'package:aledrogo/router.dart';
 import 'package:flutter/material.dart';
-import 'screens/index.dart';
-import 'package:go_router/go_router.dart';
 
 void main() async {
   runApp(MyApp());
