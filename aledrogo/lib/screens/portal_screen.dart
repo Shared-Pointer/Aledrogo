@@ -7,8 +7,6 @@ class PortalScreen extends StatelessWidget {
 
   PortalScreen({required this.email});
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,16 +32,22 @@ class PortalScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("email: $email"),
-                  Text("Tutaj jest ekran sprzedazy/kupna przedmiotow"),
+                  Text("Email: $email"),
+                  SizedBox(height: 16),
+                  Text("Tutaj jest ekran sprzedaży/kupna przedmiotów"),
+                  SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => context.push('/itemsList'),
-                    child: Text("List of products"),
-                  ), 
+                    child: Text("Lista przedmiotów"),
+                  ),
                   ElevatedButton(
                     onPressed: () => context.push('/sellList'),
-                    child: Text("List of products to sell"),
-                  ),  
+                    child: Text("Lista przedmiotów na sprzedaż"),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => context.push('/addItem'),
+                    child: Text("Dodaj przedmiot"),
+                  ),
                 ],
               ),
             );

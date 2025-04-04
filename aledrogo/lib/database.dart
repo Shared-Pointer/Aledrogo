@@ -170,10 +170,10 @@ class AppDatabase {
     return success;
   }
 
-  Future<int> addItems(int sellerId, String title, String description, double price, String category, int quantity, String image, int isAuction, String endDate) async{
+  Future<int> addItems(int usersId, String title, String description, double price, String category, int quantity, String image, int isAuction, String endDate) async{
     final db = await database;
     final success = await db.insert(items_table, {
-      items_seller_id: sellerId,
+      items_seller_id: usersId,
       items_title: title,
       items_description: description,
       items_price: price,
@@ -234,6 +234,30 @@ class AppDatabase {
     return db.query(auctions_table);
   }
 
+  Future<int> addItem(Map<String, dynamic> itemData) async {
+    final db = await database;
+    return db.insert(items_table, {
+      items_title: itemData['title'],
+      items_description: itemData['description'],
+      items_price: itemData['price'],
+      items_seller_id: itemData['users_id'],
+      items_category: itemData['category'],
+      items_quantity: itemData['quantity'],
+      items_image: itemData['image'],
+      items_is_auction: itemData['is_auction'],
+      items_end_date: itemData['end_date'],
+    });
+  }
+
+  Future<int> updateItem(int id, Map<String, dynamic> itemData) async {
+    final db = await database;
+    return db.update(items_table, itemData, where: '$items_id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteItem(int id) async {
+    final db = await database;
+    return db.delete(items_table, where: '$items_id = ?', whereArgs: [id]);
+}
 }
 
 

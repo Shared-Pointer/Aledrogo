@@ -6,6 +6,7 @@ import 'package:aledrogo/screens/options_screen.dart';
 import 'package:aledrogo/screens/portal_screen.dart';
 import 'package:aledrogo/screens/sell_screen.dart';
 import 'package:aledrogo/screens/welcome_screen.dart';
+import 'package:aledrogo/screens/add_item_screen.dart'; // Import nowego ekranu
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,25 +24,30 @@ GoRouter goRouter() {
     navigatorKey: _parentKey,
     routes: <RouteBase>[
       GoRoute(
-        path:'/index',
-        name:'index',
-        builder: (context,state) => Index(),
+        path: '/index',
+        name: 'index',
+        builder: (context, state) => Index(),
       ),
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context,state) => LoginScreen(), 
-        ),
+        builder: (context, state) => LoginScreen(),
+      ),
       GoRoute(
-          path: '/itemsList',
-          name: 'itemsList',
-          builder: (context, state) => ItemsListScreenWithNavbar(),
-        ),
+        path: '/itemsList',
+        name: 'itemsList',
+        builder: (context, state) => ItemsListScreenWithNavbar(),
+      ),
       GoRoute(
-          path: '/SellList',
-          name: 'SellList',
-          builder: (context, state) => SellListScreenWithNavbar(),
-        ),
+        path: '/sellList',
+        name: 'sellList',
+        builder: (context, state) => SellListScreenWithNavbar(),
+      ),
+      GoRoute(
+        path: '/addItem',
+        name: 'addItem',
+        builder: (context, state) => AddItemScreenWithNavbar(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Navbar(
           navigationShell: navigationShell,
@@ -148,8 +154,8 @@ class ItemsListScreenWithNavbar extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
         } else {
-          final email = snapshot.data ?? '';
-          return ItemsListScreen(email: email);
+          //final email = snapshot.data ?? '';
+          return ItemListScreen();
         }
       },
     );
@@ -169,6 +175,25 @@ class SellListScreenWithNavbar extends StatelessWidget {
         } else {
           final email = snapshot.data ?? '';
           return SellListScreen(email: email);
+        }
+      },
+    );
+  }
+}
+
+class AddItemScreenWithNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          //final email = snapshot.data ?? '';
+          return AddItemScreen();
         }
       },
     );

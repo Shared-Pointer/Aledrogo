@@ -29,6 +29,26 @@ class UserRepository {
     // jezeli wynik nie jest pusty to taki user istnieje
     return result.isNotEmpty;
   }
+
+  Future<int?> getUserId() async {
+    final sharedPreferences = await SharedPreferences.getInstance();
+    final email = sharedPreferences.getString('email');
+    if (email == null) return null;
+
+    final db = AppDatabase.instance;
+    final database = await db.database;
+    final result = await database.query(
+      AppDatabase.users_table,
+      where: '${AppDatabase.users_email} = ?',
+      whereArgs: [email],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first[AppDatabase.users_id] as int;
+    }
+    return null;
+  }
+
 }
 
 Future<String?> getUserEmail() async {
