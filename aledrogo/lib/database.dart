@@ -195,7 +195,15 @@ class AppDatabase {
       transactions_price: price,
       transactions_date: date
     });
+    print("Transaction added: $success");
     return success;
+  }
+
+  Future<List<Map<String, dynamic>>> getAllTransactions() async {
+    final db = await database;
+    final result = await db.query(transactions_table);
+    print("All transactions: $result");
+    return result;
   }
 
   Future<int> addAuction(int itemId, int buyerId, double price, String date) async{
@@ -258,6 +266,38 @@ class AppDatabase {
     final db = await database;
     return db.delete(items_table, where: '$items_id = ?', whereArgs: [id]);
 }
+
+  Future<List<Map<String, dynamic>>> getAvailableItems() async {
+    final db = await database;
+    return db.query(items_table, where: '$items_quantity > ?', whereArgs: [0]);
+  }
+
+  Future<List<Map<String, dynamic>>> getPurchasedItems(int userId) async {
+    final db = await database;
+    final result = db.rawQuery('''
+      SELECT * FROM $items_table
+      WHERE $items_id IN (
+        SELECT $transactions_item_id FROM $transactions_table
+        WHERE $transactions_buyer_id = ?
+      )
+    ''', [userId]);
+    print("Purchased items for user $userId: $result");
+    return result;
+  }
+
+Future<void> clearDatabase() async {
+  final db = await database;
+
+  // Usuń dane z każdej tabeli
+  //await db.delete(users_table);
+  //await db.delete(users_data_table);
+  //await db.delete(items_table);
+  await db.delete(transactions_table);
+  //await db.delete(auctions_table);
+
+  print("Baza danych została wyczyszczona.");
+}
+  
 }
 
 

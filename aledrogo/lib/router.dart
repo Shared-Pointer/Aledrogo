@@ -1,12 +1,13 @@
 import 'package:aledrogo/navbar.dart';
 import 'package:aledrogo/screens/index.dart';
 import 'package:aledrogo/screens/items_list_screen.dart';
+import 'package:aledrogo/screens/purchased_items_screen.dart';
 import 'package:aledrogo/screens/login.dart';
 import 'package:aledrogo/screens/options_screen.dart';
 import 'package:aledrogo/screens/portal_screen.dart';
 import 'package:aledrogo/screens/sell_screen.dart';
 import 'package:aledrogo/screens/welcome_screen.dart';
-import 'package:aledrogo/screens/add_item_screen.dart'; // Import nowego ekranu
+import 'package:aledrogo/screens/add_item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -37,6 +38,11 @@ GoRouter goRouter() {
         path: '/itemsList',
         name: 'itemsList',
         builder: (context, state) => ItemsListScreenWithNavbar(),
+      ),
+      GoRoute(
+        path: '/purchasedItems',
+        name: 'purchasedItems',
+        builder: (context, state) => PurchasedItemsScreen(),
       ),
       GoRoute(
         path: '/sellList',

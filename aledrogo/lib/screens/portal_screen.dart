@@ -48,6 +48,10 @@ class PortalScreen extends StatelessWidget {
                     onPressed: () => context.push('/addItem'),
                     child: Text("Dodaj przedmiot"),
                   ),
+                  ElevatedButton(
+                    onPressed: () => context.push('/purchasedItems'),
+                    child: Text("Kupione przedmioty"),
+                  ),
                 ],
               ),
             );

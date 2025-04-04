@@ -1,7 +1,13 @@
 import 'package:aledrogo/router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'database.dart';
 
 void main() async {
+  // if (kDebugMode) {
+  //   await AppDatabase.instance.clearDatabase();
+  //   print("Baza danych została wyczyszczona w trybie debugowania.");
+  // }
   runApp(MyApp());
 }
 
