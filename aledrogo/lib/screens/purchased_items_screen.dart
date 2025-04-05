@@ -11,7 +11,7 @@ class PurchasedItemsScreen extends StatelessWidget {
       return [];
     }
     final db = AppDatabase.instance;
-    final itemsData = await db.getPurchasedItems(userId); // Poprawiono obsługę Future
+    final itemsData = await db.getPurchasedItems(userId);
     print("Fetched purchased items for user $userId: $itemsData");
     return itemsData.map((data) => Item.fromMap(data)).toList();
   }

@@ -7,7 +7,7 @@ import 'purchased_items_screen.dart';
 class ItemListScreen extends StatelessWidget {
   Future<List<Item>> fetchItems() async {
     final db = AppDatabase.instance;
-    final itemsData = await db.getAvailableItems(); // Zmieniono na getAvailableItems
+    final itemsData = await db.getAvailableItems();
     return itemsData.map((data) => Item.fromMap(data)).toList();
   }
 
@@ -17,7 +17,6 @@ class ItemListScreen extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Błąd: Nie można znaleźć zalogowanego użytkownika")),
       );
-      print("Transaction added: $userId, ${item.id}, ${item.price}");
       return;
     }
 
@@ -33,7 +32,8 @@ class ItemListScreen extends StatelessWidget {
     if (item.quantity > 1) {
       await db.updateItem(item.id, {'quantity': item.quantity - 1});
     } else {
-      await db.deleteItem(item.id);
+      // Zamiast usuwania, ustawiamy ilość na 0.
+      await db.updateItem(item.id, {'quantity': 0});
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +86,7 @@ class ItemListScreen extends StatelessWidget {
                     child: Text("Kup"),
                   ),
                   onTap: () {
-                    // przejście do szczegółów przedmiotu
+                    // Opcjonalnie: przejście do szczegółów przedmiotu
                   },
                 );
               },
