@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../database.dart';
 import '../item.dart';
 import '../user_repository.dart';
@@ -40,10 +41,11 @@ class ItemListScreen extends StatelessWidget {
       SnackBar(content: Text("Przedmiot został kupiony!")),
     );
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => PurchasedItemsScreen()),
-    );
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(builder: (context) => PurchasedItemsScreen()),
+    // );
+    context.push('/purchasedItems');
   }
 
   @override
@@ -55,10 +57,7 @@ class ItemListScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.shopping_cart), 
             onPressed: () { 
-              Navigator.push( 
-                context, 
-                MaterialPageRoute(builder: (context) => PurchasedItemsScreen()), 
-              ); 
+              context.push('/purchasedItems'); 
             }, 
           ), 
         ],

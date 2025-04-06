@@ -1,7 +1,5 @@
 import 'package:aledrogo/router.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'database.dart';
 
 void main() async {
   // if (kDebugMode) {
@@ -27,6 +25,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-
-//zastanawiamy sie co dalej bo jebany go_router wszystko psuje xdddd

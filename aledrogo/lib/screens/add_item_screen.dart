@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../database.dart';
 import '../user_repository.dart';
 
@@ -35,7 +36,8 @@ void _addItem() async {
       'is_auction': 0,
       'end_date': null,
     });
-    Navigator.pop(context);
+    // Navigator.pop(context);
+    context.pop();
   }
 }
 
