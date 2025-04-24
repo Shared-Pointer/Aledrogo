@@ -58,7 +58,7 @@ void _addItem() async {
       'description': _descriptionController.text,
       'price': double.parse(_priceController.text),
       'users_id': userId,
-      'category': 'Inne',
+      'category': _categoryController.text,
       'quantity': 1,
       'image': '',
       'is_auction': 0,

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../database.dart';
 import '../item.dart';
 import '../user_repository.dart';
-import 'purchased_items_screen.dart'; 
 
 class ItemListScreen extends StatelessWidget {
   Future<List<Item>> fetchItems() async {
@@ -41,10 +40,6 @@ class ItemListScreen extends StatelessWidget {
       SnackBar(content: Text("Przedmiot został kupiony!")),
     );
 
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (context) => PurchasedItemsScreen()),
-    // );
     context.push('/purchasedItems');
   }
 
@@ -78,7 +73,7 @@ class ItemListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final item = items[index];
                 return ListTile(
-                  title: Text(item.title),
+                  title: Text("${item.title} ${item.category}"),
                   subtitle: Text("${item.price} PLN"),
                   trailing: ElevatedButton(
                     onPressed: () => _buyItem(context, item),
