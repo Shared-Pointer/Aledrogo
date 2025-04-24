@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../database.dart';
@@ -8,11 +10,37 @@ class AddItemScreen extends StatefulWidget {
   _AddItemScreenState createState() => _AddItemScreenState();
 }
 
+typedef CategoryEntry = DropdownMenuEntry<CategoryLabel>;
+
+// DropdownMenuEntry labels and values for the second dropdown menu.
+enum CategoryLabel {
+  odziez('Odzież'),
+  elektronika('Elektronika'),
+  obuwe('Obuwie'),
+  toys('Zabawki'),
+  collectioner_items('Kolekjonerskie'),
+  appliances('AGD/RTV'),
+  games('Konsole i Gry'),
+  other('Inne');
+
+  // 'Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne'
+  const CategoryLabel(this.label);
+  final String label;
+
+  static final List<CategoryEntry> entries = UnmodifiableListView<CategoryEntry>(
+    values.map<CategoryEntry>(
+      (CategoryLabel icon) => CategoryEntry(value: icon, label: icon.label),
+    ),
+  );
+}
+
 class _AddItemScreenState extends State<AddItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
+  final _categoryController = TextEditingController();
+  
 
 void _addItem() async {
   if (_formKey.currentState!.validate()) {
@@ -75,6 +103,14 @@ void _addItem() async {
                   }
                   return null;
                 },
+              ),
+              DropdownMenu<CategoryLabel>(
+                initialSelection: CategoryLabel.other,
+                controller: _categoryController,
+                requestFocusOnTap: true,
+                label: const Text('Kategoria'),
+                onSelected: (CategoryLabel? category) {},
+                dropdownMenuEntries: CategoryLabel.entries,
               ),
               SizedBox(height: 20),
               ElevatedButton(

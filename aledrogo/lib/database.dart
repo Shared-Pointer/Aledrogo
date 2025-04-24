@@ -5,7 +5,7 @@ import 'dart:convert';
 
 class AppDatabase { 
   static const _name = 'aledrogo.db';
-  static const _version = 1;
+  static const _version = 2;
 
   // Tabela USERS
   static const users_table = 'users';
@@ -62,7 +62,10 @@ class AppDatabase {
   Future<Database> _initDB(String dbName) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, dbName);
-    return openDatabase(path, version: _version, onCreate: _createDB);
+    return openDatabase(path, 
+      version: _version, 
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB);
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -96,7 +99,7 @@ class AppDatabase {
         $items_title TEXT NOT NULL,
         $items_description TEXT,
         $items_price REAL NOT NULL,
-        $items_category TEXT,
+        $items_category TEXT CHECK( pType IN ('Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne') ) NOT NULL DEFAULT 'Inne',
         $items_quantity INTEGER,
         $items_image TEXT,
         $items_is_auction INTEGER,
@@ -131,6 +134,44 @@ class AppDatabase {
       )
     ''');
   }
+
+  //migracja typpu: kopiowanie do tempowej tabeli usuniecie starej i zmiana nazwy tempowej na prawidłowa :3
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+  if (oldVersion < 2) {
+    await db.execute('''
+      CREATE TABLE items_temp (
+        $items_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        $items_seller_id INTEGER NOT NULL,
+        $items_title TEXT NOT NULL,
+        $items_description TEXT,
+        $items_price REAL NOT NULL,
+        $items_category TEXT CHECK($items_category IN ('Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne')) NOT NULL DEFAULT 'Inne',
+        $items_quantity INTEGER,
+        $items_image TEXT,
+        $items_is_auction INTEGER,
+        $items_end_date TEXT,
+        FOREIGN KEY ($items_seller_id) REFERENCES $users_table($users_id)
+      )
+    ''');
+
+    await db.execute('''
+      INSERT INTO items_temp (
+        $items_id, $items_seller_id, $items_title, $items_description,
+        $items_price, $items_category, $items_quantity, $items_image,
+        $items_is_auction, $items_end_date
+      )
+      SELECT
+        $items_id, $items_seller_id, $items_title, $items_description,
+        $items_price, $items_category, $items_quantity, $items_image,
+        $items_is_auction, $items_end_date
+      FROM $items_table
+    ''');
+
+    await db.execute('DROP TABLE $items_table');
+
+    await db.execute('ALTER TABLE items_temp RENAME TO $items_table');
+  }
+}
 
   Future<Database> get database async {
     if (_database != null) return _database!;

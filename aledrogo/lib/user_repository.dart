@@ -48,7 +48,6 @@ class UserRepository {
     }
     return null;
   }
-
 }
 
 Future<String?> getUserEmail() async {
