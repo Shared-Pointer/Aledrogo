@@ -1,7 +1,8 @@
 import 'dart:collection';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../database.dart';
 import '../user_repository.dart';
 
@@ -23,7 +24,6 @@ enum CategoryLabel {
   games('Konsole i Gry'),
   other('Inne');
 
-  // 'Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne'
   const CategoryLabel(this.label);
   final String label;
 
@@ -39,35 +39,54 @@ class _AddItemScreenState extends State<AddItemScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
-  final _categoryController = TextEditingController();
-  
+  XFile? _imageFile;
+  final ImagePicker _picker = ImagePicker();
+  String? _selectedCategory;
 
-void _addItem() async {
-  if (_formKey.currentState!.validate()) {
-    final userId = await UserRepository().getUserId();
-    if (userId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Błąd: Nie można znaleźć zalogowanego użytkownika")),
-      );
-      return;
+  void _addItem() async {
+    if (_formKey.currentState!.validate()) {
+      final userId = await UserRepository().getUserId();
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Błąd: Nie można znaleźć zalogowanego użytkownika")),
+        );
+        return;
+      }
+
+      final db = AppDatabase.instance;
+      await db.addItem({
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'price': double.parse(_priceController.text),
+        'users_id': userId,
+        'category': _selectedCategory ?? CategoryLabel.other.label,
+        'quantity': 1,
+        'image': _imageFile?.path ?? '',
+        'is_auction': 0,
+        'end_date': null,
+      });
+      // Navigator.pop(context);
+      context.pop();
     }
-
-    final db = AppDatabase.instance;
-    await db.addItem({
-      'title': _titleController.text,
-      'description': _descriptionController.text,
-      'price': double.parse(_priceController.text),
-      'users_id': userId,
-      'category': _categoryController.text,
-      'quantity': 1,
-      'image': '',
-      'is_auction': 0,
-      'end_date': null,
-    });
-    // Navigator.pop(context);
-    context.pop();
   }
-}
+
+  Future<void> _onImageButtonPressed(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 600,
+        maxHeight: 600,
+        imageQuality: 80,
+      );
+      setState(() {
+        _imageFile = pickedFile;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Błąd podczas wybierania obrazu")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +112,27 @@ void _addItem() async {
                 controller: _descriptionController,
                 decoration: InputDecoration(labelText: "Opis"),
               ),
+              Semantics(
+                label: 'image_picker',
+                child: FloatingActionButton(
+                  onPressed: () {
+                    _onImageButtonPressed(ImageSource.gallery);
+                  },
+                  heroTag: 'image0',
+                  tooltip: 'Pick Image from gallery',
+                  child: const Icon(Icons.photo),
+                ),
+              ),
+              if (_imageFile != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Image.file(
+                    File(_imageFile!.path),
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               TextFormField(
                 controller: _priceController,
                 decoration: InputDecoration(labelText: "Cena"),
@@ -106,10 +146,11 @@ void _addItem() async {
               ),
               DropdownMenu<CategoryLabel>(
                 initialSelection: CategoryLabel.other,
-                controller: _categoryController,
-                requestFocusOnTap: true,
-                label: const Text('Kategoria'),
-                onSelected: (CategoryLabel? category) {},
+                onSelected: (CategoryLabel? category) {
+                  setState(() {
+                    _selectedCategory = category?.label;
+                  });
+                },
                 dropdownMenuEntries: CategoryLabel.entries,
               ),
               SizedBox(height: 20),

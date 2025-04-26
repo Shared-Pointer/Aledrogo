@@ -8,6 +8,7 @@ import 'package:aledrogo/screens/portal_screen.dart';
 import 'package:aledrogo/screens/sell_screen.dart';
 import 'package:aledrogo/screens/welcome_screen.dart';
 import 'package:aledrogo/screens/add_item_screen.dart';
+import 'package:aledrogo/screens/item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,6 +54,14 @@ GoRouter goRouter() {
         path: '/addItem',
         name: 'addItem',
         builder: (context, state) => AddItemScreenWithNavbar(),
+      ),
+      GoRoute(
+        path: '/itemDetails/:itemId',
+        name: 'itemDetails',
+        builder: (context, state) {
+          final itemId = int.parse(state.pathParameters['itemId']!);
+          return ItemDetailScreenWithNavBar(itemId: itemId);
+          }
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Navbar(
@@ -200,6 +209,29 @@ class AddItemScreenWithNavbar extends StatelessWidget {
         } else {
           //final email = snapshot.data ?? '';
           return AddItemScreen();
+        }
+      },
+    );
+  }
+}
+
+class ItemDetailScreenWithNavBar extends StatelessWidget {
+  final int itemId;
+
+  ItemDetailScreenWithNavBar({required this.itemId});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: getEmail(), 
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(body: Center(child: CircularProgressIndicator()));
+        } else if (snapshot.hasError) {
+          return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+        } else {
+          //final email = snapshot.data ?? '';
+          return ItemScreen(itemId: itemId);
         }
       },
     );

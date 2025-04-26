@@ -317,6 +317,17 @@ class AppDatabase {
     return result;
   }
 
+  Future<List<Map<String, dynamic>>> getItemDetails(int itemId) async {
+    final db = await database;
+    final result = await db.rawQuery('''
+      SELECT *
+      FROM $items_table
+      WHERE $items_id = ?
+    ''', [itemId]);
+    print("Item details for: $result");
+    return result;
+  }
+
   Future<void> clearDatabase() async {
     final db = await database;
     await db.delete(transactions_table);

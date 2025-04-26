@@ -80,7 +80,7 @@ class ItemListScreen extends StatelessWidget {
                     child: Text("Kup"),
                   ),
                   onTap: () {
-                    // Opcjonalnie: przejście do szczegółów przedmiotu
+                    context.push('/itemDetails/${item.id}');
                   },
                 );
               },
