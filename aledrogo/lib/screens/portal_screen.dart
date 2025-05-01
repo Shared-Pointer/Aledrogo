@@ -52,6 +52,14 @@ class PortalScreen extends StatelessWidget {
                     onPressed: () => context.push('/purchasedItems'),
                     child: Text("Kupione przedmioty"),
                   ),
+                  ElevatedButton(
+                    onPressed: () => context.push('/auctionItems'),
+                    child: Text("Przedmioty na licytacji"),
+                ),
+                  ElevatedButton(
+                    onPressed: () => context.push('/create-auction'),
+                    child: Text('Stwórz licytację'),
+              ),
                 ],
               ),
             );

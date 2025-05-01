@@ -5,7 +5,7 @@ import 'dart:convert';
 
 class AppDatabase { 
   static const _name = 'aledrogo.db';
-  static const _version = 2;
+  static const _version = 3;
 
   // Tabela USERS
   static const users_table = 'users';
@@ -137,6 +137,7 @@ class AppDatabase {
 
   //migracja typpu: kopiowanie do tempowej tabeli usuniecie starej i zmiana nazwy tempowej na prawidłowa :3
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    print("----------------Upgrading database from version $oldVersion to $newVersion");
   if (oldVersion < 2) {
     await db.execute('''
       CREATE TABLE items_temp (
@@ -170,6 +171,22 @@ class AppDatabase {
     await db.execute('DROP TABLE $items_table');
 
     await db.execute('ALTER TABLE items_temp RENAME TO $items_table');
+
+  if (oldVersion < 3) {
+    print("----------------Adding new columns to auctions table");
+    await db.execute('''
+      ALTER TABLE $auctions_table ADD COLUMN title TEXT;
+    ''');
+    await db.execute('''
+      ALTER TABLE $auctions_table ADD COLUMN description TEXT;
+    ''');
+    await db.execute('''
+      ALTER TABLE $auctions_table ADD COLUMN category TEXT;
+    ''');
+    await db.execute('''
+      ALTER TABLE $auctions_table ADD COLUMN image TEXT;
+    ''');
+  }
   }
 }
 
@@ -240,15 +257,15 @@ class AppDatabase {
     return await db.query(transactions_table);
   }
 
-  Future<int> addAuction(int itemId, int buyerId, double price, String date) async {
-    final db = await database;
-    return await db.insert(auctions_table, {
-      auctions_item_id: itemId,
-      auctions_buyer_id: buyerId,
-      auctions_price: price,
-      auctions_date: date
-    });
-  }
+  // Future<int> addAuction(int itemId, int buyerId, double price, String date) async {
+  //   final db = await database;
+  //   return await db.insert(auctions_table, {
+  //     auctions_item_id: itemId,
+  //     auctions_buyer_id: buyerId,
+  //     auctions_price: price,
+  //     auctions_date: date
+  //   });
+  // }
 
   Future<List<Map<String, dynamic>>> getUsers() async {
     final db = await database;
@@ -332,5 +349,39 @@ class AppDatabase {
     final db = await database;
     await db.delete(transactions_table);
     print("Baza danych została wyczyszczona.");
+  }
+
+
+  Future<void> addAuction(Map<String, dynamic> auctionData) async {
+    final db = await instance.database;
+    await db.insert('auctions', auctionData);
+  }
+
+  Future<void> placeBid(int auctionId, int userId, double newPrice) async {
+    final db = await instance.database;
+    await db.update(
+      'auctions',
+      {'current_price': newPrice, 'current_bidder_id': userId},
+      where: 'id = ?',
+      whereArgs: [auctionId],
+    );
+  }
+
+  Future<void> finalizeAuction(int auctionId) async {
+    final db = await instance.database;
+    final auction = await db.query(
+      'auctions',
+      where: 'id = ?',
+      whereArgs: [auctionId],
+    );
+    if (auction.isNotEmpty) {
+      final winnerId = auction.first['current_bidder_id'];
+      final itemId = auction.first['item_id'];
+      await db.insert('purchased_items', {
+        'user_id': winnerId,
+        'item_id': itemId,
+      });
+      await db.delete('auctions', where: 'id = ?', whereArgs: [auctionId]);
+    }
   }
 }

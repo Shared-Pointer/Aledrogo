@@ -12,6 +12,8 @@ import 'package:aledrogo/screens/item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:aledrogo/screens/create_auction_screen.dart';
+import 'package:aledrogo/screens/auction_items_screen.dart';
 
 final _parentKey = GlobalKey<NavigatorState>();
 
@@ -61,8 +63,18 @@ GoRouter goRouter() {
         builder: (context, state) {
           final itemId = int.parse(state.pathParameters['itemId']!);
           return ItemDetailScreenWithNavBar(itemId: itemId);
-          }
-      ),
+          },
+        ),
+        GoRoute(
+          path: '/auctionItems',
+          name: 'auctionItems',
+          builder: (context, state) => AuctionItemsScreen(),
+        ),
+        GoRoute(
+          path: '/create-auction',
+          name: 'createAuction',
+          builder: (context, state) => CreateAuctionScreen(),
+        ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => Navbar(
           navigationShell: navigationShell,
