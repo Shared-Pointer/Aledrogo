@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import '../database.dart';
+import '../user_repository.dart';
 
 class AuctionItemsScreen extends StatelessWidget {
   Future<List<Map<String, dynamic>>> fetchAuctionItems() async {
-    final db = AppDatabase.instance;
-    return await db.getAuctions();
+    final db = await AppDatabase.instance.database;
+    return await db.rawQuery('''
+      SELECT 
+        a.${AppDatabase.auctions_id} AS auction_id,
+        a.${AppDatabase.auctions_item_id} AS item_id,
+        a.${AppDatabase.auctions_buyer_id} AS buyer_id,
+        a.${AppDatabase.auctions_price} AS price,
+        a.${AppDatabase.auctions_date} AS end_date,
+        i.${AppDatabase.items_title} AS title,
+        i.${AppDatabase.items_description} AS description,
+        i.${AppDatabase.items_image} AS image,
+        i.${AppDatabase.items_category} AS category
+      FROM ${AppDatabase.auctions_table} a
+      INNER JOIN ${AppDatabase.items_table} i ON a.${AppDatabase.auctions_item_id} = i.${AppDatabase.items_id}
+    ''');
   }
 
   void _navigateToAuctionDetails(BuildContext context, Map<String, dynamic> auction) {
@@ -55,11 +69,24 @@ class AuctionDetailsScreen extends StatelessWidget {
 
   AuctionDetailsScreen({required this.auction});
 
-  void _placeBid(BuildContext context) {
-    // Implementacja składania oferty
+  void _placeBid(BuildContext context) async {
+    final userId = await UserRepository().getUserId();
+    if (userId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Błąd: Nie można znaleźć zalogowanego użytkownika")),
+      );
+      return;
+    }
+
+    final newPrice = auction['price'] + 10; // Minimalne podbicie o 10 zł
+    final db = AppDatabase.instance;
+    await db.placeBid(auction['auction_id'], userId, newPrice);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Oferta została złożona")),
     );
+
+    Navigator.of(context).pop(); // Powrót do listy aukcji
   }
 
   @override
@@ -75,13 +102,18 @@ class AuctionDetailsScreen extends StatelessWidget {
             SizedBox(height: 8),
             Text("Opis: ${auction['description']}"),
             SizedBox(height: 8),
-            Text("Cena początkowa: ${auction['price']} PLN"),
+            if (auction['image'] != null && auction['image'].toString().isNotEmpty)
+              Image.network(auction['image']),
+            SizedBox(height: 8),
+            Text("Kategoria: ${auction['category']}"),
+            SizedBox(height: 8),
+            Text("Cena aktualna: ${auction['price']} PLN"),
             SizedBox(height: 8),
             Text("Data zakończenia: ${auction['end_date']}"),
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: () => _placeBid(context),
-              child: Text("Złóż ofertę"),
+              child: Text("Złóż ofertę (+10 PLN)"),
             ),
           ],
         ),

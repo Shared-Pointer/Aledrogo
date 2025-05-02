@@ -319,7 +319,11 @@ class AppDatabase {
 
   Future<List<Map<String, dynamic>>> getAvailableItems() async {
     final db = await database;
-    return await db.query(items_table, where: '$items_quantity > ?', whereArgs: [0]);
+    return await db.rawQuery('''
+      SELECT * FROM $items_table
+      WHERE $items_quantity > 0
+      AND $items_id NOT IN (SELECT $auctions_item_id FROM $auctions_table)
+    ''');
   }
 
   Future<List<Map<String, dynamic>>> getPurchasedItems(int userId) async {
@@ -358,11 +362,14 @@ class AppDatabase {
   }
 
   Future<void> placeBid(int auctionId, int userId, double newPrice) async {
-    final db = await instance.database;
+    final db = await database;
     await db.update(
-      'auctions',
-      {'current_price': newPrice, 'current_bidder_id': userId},
-      where: 'id = ?',
+      auctions_table,
+      {
+        'price': newPrice,
+        'buyer_id': userId,
+      },
+      where: '$auctions_id = ?',
       whereArgs: [auctionId],
     );
   }

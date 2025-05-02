@@ -75,10 +75,12 @@ class ItemListScreen extends StatelessWidget {
                 return ListTile(
                   title: Text("${item.title} ${item.category}"),
                   subtitle: Text("${item.price} PLN"),
-                  trailing: ElevatedButton(
-                    onPressed: () => _buyItem(context, item),
-                    child: Text("Kup"),
-                  ),
+                  trailing: item.isAuction
+                      ? null
+                      : ElevatedButton(
+                          onPressed: () => _buyItem(context, item),
+                          child: Text("Kup"),
+                        ),
                   onTap: () {
                     context.push('/itemDetails/${item.id}');
                   },
