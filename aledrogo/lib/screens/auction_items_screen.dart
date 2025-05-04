@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../database.dart';
 import '../user_repository.dart';
@@ -103,7 +105,7 @@ class AuctionDetailsScreen extends StatelessWidget {
             Text("Opis: ${auction['description']}"),
             SizedBox(height: 8),
             if (auction['image'] != null && auction['image'].toString().isNotEmpty)
-              Image.network(auction['image']),
+              Image.file(File(auction['image'])),
             SizedBox(height: 8),
             Text("Kategoria: ${auction['category']}"),
             SizedBox(height: 8),
