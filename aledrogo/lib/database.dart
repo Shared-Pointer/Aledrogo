@@ -99,7 +99,7 @@ class AppDatabase {
         $items_title TEXT NOT NULL,
         $items_description TEXT,
         $items_price REAL NOT NULL,
-        $items_category TEXT CHECK( pType IN ('Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne') ) NOT NULL DEFAULT 'Inne',
+        $items_category TEXT CHECK( $items_category IN ('Odzież','Elektronika','Obuwie','Zabawki','Kolekcjonerskie','AGD/RTV','Konsole i Gry','Inne') ) NOT NULL DEFAULT 'Inne',
         $items_quantity INTEGER,
         $items_image TEXT,
         $items_is_auction INTEGER,
