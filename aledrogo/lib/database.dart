@@ -213,7 +213,7 @@ class AppDatabase {
 
   Future<int> addUserData(int userId, String city, String street, String houseNumber, String phoneNumber, String postalCode, double saldo) async {
     final db = await database;
-    return await db.insert(users_data_table, {
+    return await db.update(users_data_table, {
       users_data_user_id: userId,
       users_data_city: city,
       users_data_street: street,
@@ -373,6 +373,32 @@ class AppDatabase {
       whereArgs: [auctionId],
     );
   }
+
+Future<void> transferSaldo(int buyerId, int sellerId, double amount) async {
+  final db = await database;
+  final sellerData = await db.query(users_data_table, where: '$users_data_user_id = ?', whereArgs: [sellerId]);
+
+  if (sellerData.isEmpty) {
+    // Jeśli nie ma rekordu, wstaw nowy z saldem = amount
+    await db.insert(users_data_table, {
+      users_data_user_id: sellerId,
+      users_data_city: '',
+      users_data_street: '',
+      users_data_house_number: '',
+      users_data_phone_number: '',
+      users_data_postal_code: '',
+      users_data_saldo: amount,
+    });
+    print("Utworzono rekord users_data i przelano $amount PLN do użytkownika o ID: $sellerId");
+  } else {
+    // Jeśli jest rekord, zaktualizuj saldo
+    final sellerSaldo = (sellerData.first[users_data_saldo] ?? 0) as double;
+    await db.update(users_data_table, {
+      users_data_saldo: sellerSaldo + amount,
+    }, where: '$users_data_user_id = ?', whereArgs: [sellerId]);
+    print("Saldo $amount PLN przelano do użytkownika o ID: $sellerId");
+  }
+}
 
   Future<void> finalizeAuction(int auctionId) async {
     final db = await instance.database;

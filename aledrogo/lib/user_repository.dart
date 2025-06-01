@@ -56,10 +56,31 @@ Future<String?> getUserEmail() async {
 }
 
 Future<Map<String, dynamic>> getUserData() async {
+  final shared_preferences = await SharedPreferences.getInstance();
+  final email = shared_preferences.getString('email');
+  if (email == null) return {};
+
   final db = AppDatabase.instance;
-  final user = await db.getUsers();
-  final userData = await db.getUserData(user.first['id']);
-  return userData.isNotEmpty ? userData.first : {};
+  // Pobierz dane użytkownika
+  final users = await db.getUsers();
+  final user = users.firstWhere((u) => u['email'] == email, orElse: () => {});
+
+  // Pobierz dane szczegółowe (users_data)
+  final userDataList = await db.getUserData(user['id']);
+  final userData = userDataList.isNotEmpty ? userDataList.first : {};
+
+  // Połącz dane z obu tabel
+  return {
+    'id': user['id'],
+    'name': user['name'],
+    'email': user['email'],
+    'city': userData['city'] ?? '',
+    'street': userData['street'] ?? '',
+    'house_number': userData['house_number'] ?? '',
+    'phone_number': userData['phone_number'] ?? '',
+    'postal_code': userData['postal_code'] ?? '',
+    'saldo': userData['saldo'] ?? 0.0,
+  };
 }
 
 Future<void> logout(BuildContext context) async {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../database.dart';
 import '../item.dart';
 import '../user_repository.dart';
+import 'payment_screen.dart';
 
 class ItemListScreen extends StatelessWidget {
   Future<List<Item>> fetchItems() async {
@@ -11,7 +12,7 @@ class ItemListScreen extends StatelessWidget {
     return itemsData.map((data) => Item.fromMap(data)).toList();
   }
 
-  void _buyItem(BuildContext context, Item item) async {
+ void _buyItem(BuildContext context, Item item) async {
     final userId = await UserRepository().getUserId();
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -20,27 +21,43 @@ class ItemListScreen extends StatelessWidget {
       return;
     }
 
-    final db = AppDatabase.instance;
-    await db.addTransaction(
-      userId, 
-      item.usersId, 
-      item.id,
-      item.price,
-      DateTime.now().toIso8601String(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentScreen(
+          amount: item.price,
+          onPaymentSuccess: (method) async {
+            try {
+              final db = AppDatabase.instance;
+              await db.transferSaldo(userId, item.usersId, item.price);
+
+              await db.addTransaction(
+                userId,
+                item.usersId,
+                item.id,
+                item.price,
+                DateTime.now().toIso8601String(),
+              );
+
+              if (item.quantity > 1) {
+                await db.updateItem(item.id, {'quantity': item.quantity - 1});
+              } else {
+                await db.updateItem(item.id, {'quantity': 0});
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Przedmiot został kupiony przez $method!")),
+              );
+              context.push('/purchasedItems');
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Błąd płatności: $e")),
+              );
+            }
+          },
+        ),
+      ),
     );
-
-    if (item.quantity > 1) {
-      await db.updateItem(item.id, {'quantity': item.quantity - 1});
-    } else {
-      // Zamiast usuwania, ustawiamy ilość na 0.
-      await db.updateItem(item.id, {'quantity': 0});
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Przedmiot został kupiony!")),
-    );
-
-    context.push('/purchasedItems');
   }
 
   @override
