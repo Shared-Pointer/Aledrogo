@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database.dart';
 import '../user_repository.dart';
+import 'package:intl/intl.dart';
 
 class CreateAuctionScreen extends StatefulWidget {
   @override
@@ -20,7 +21,7 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
 
   void _createAuction() async {
     if (_formKey.currentState!.validate() && _endDate != null && _selectedItemId != null) {
-      final userId = await UserRepository().getUserId(); // Pobierz ID zalogowanego użytkownika
+      final userId = await UserRepository().getUserId();
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Błąd: Nie można znaleźć zalogowanego użytkownika")),
@@ -30,10 +31,9 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
 
       final db = AppDatabase.instance;
 
-      // Dodaj aukcję z kopiowaniem danych z tabeli items
       await db.addAuction({
         'item_id': _selectedItemId,
-        'buyer_id': userId, // Ustaw buyer_id jako ID osoby wystawiającej
+        'buyer_id': userId,
         'price': double.parse(_startingPriceController.text),
         'date': _endDate!.toIso8601String(),
       });
@@ -49,16 +49,25 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
     }
   }
 
+  String _formatDate(DateTime date) {
+    return DateFormat('dd.MM.yyyy').format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('Stwórz licytację')),
+      appBar: AppBar(
+        title: Text('Stwórz licytację'),
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
+      backgroundColor: Color(0xFFFFFFFF),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: fetchAvailableItems(),
@@ -68,11 +77,24 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
                   } else if (snapshot.hasError) {
                     return Center(child: Text("Błąd: ${snapshot.error}"));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text("Brak dostępnych przedmiotów do wystawienia na aukcję"));
+                    return Center(
+                      child: Text(
+                        "Brak dostępnych przedmiotów do wystawienia na aukcję",
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    );
                   } else {
                     final items = snapshot.data!;
                     return DropdownButtonFormField<int>(
                       value: _selectedItemId,
+                      decoration: InputDecoration(
+                        labelText: "Wybierz przedmiot",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
                       items: items.map((item) {
                         return DropdownMenuItem<int>(
                           value: item['id'],
@@ -84,23 +106,37 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
                           _selectedItemId = value;
                         });
                       },
-                      decoration: InputDecoration(labelText: "Wybierz przedmiot"),
                       validator: (value) => value == null ? "Wybierz przedmiot" : null,
                     );
                   }
                 },
               ),
+              SizedBox(height: 20),
               TextFormField(
                 controller: _startingPriceController,
-                decoration: InputDecoration(labelText: 'Cena początkowa'),
-                keyboardType: TextInputType.number,
-                validator: (value) => value!.isEmpty ? 'Pole wymagane' : null,
+                decoration: InputDecoration(
+                  labelText: 'Cena początkowa',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(Icons.attach_money, color: Colors.deepPurple),
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Pole wymagane';
+                  final parsed = double.tryParse(value.replaceAll(',', '.'));
+                  if (parsed == null || parsed <= 0) return 'Podaj poprawną cenę';
+                  return null;
+                },
               ),
-              ElevatedButton(
-                onPressed: () async {
+              SizedBox(height: 20),
+              InkWell(
+                onTap: () async {
                   final selectedDate = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
+                    initialDate: _endDate ?? DateTime.now(),
                     firstDate: DateTime.now(),
                     lastDate: DateTime(2100),
                   );
@@ -110,14 +146,43 @@ class _CreateAuctionScreenState extends State<CreateAuctionScreen> {
                     });
                   }
                 },
-                child: Text(_endDate == null
-                    ? 'Wybierz datę zakończenia'
-                    : 'Data zakończenia: ${_endDate!.toLocal()}'),
+                borderRadius: BorderRadius.circular(12),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Data zakończenia',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    errorText: _endDate == null ? 'Wybierz datę' : null,
+                    suffixIcon: Icon(Icons.calendar_today, color: Colors.deepPurple),
+                  ),
+                  child: Text(
+                    _endDate == null ? 'Wybierz datę zakończenia' : _formatDate(_endDate!),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: _endDate == null ? Colors.grey[600] : Colors.black87,
+                    ),
+                  ),
+                ),
               ),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _createAuction,
-                child: Text('Stwórz licytację'),
+              SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _createAuction,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  child: Text('Stwórz licytację'),
+                ),
               ),
             ],
           ),

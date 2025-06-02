@@ -81,7 +81,6 @@ class _OptionsScreenState extends State<OptionsScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    Text("email: ${widget.email}"),
                     SizedBox(height: 16),
                     TextFormField(
                       controller: _cityController,

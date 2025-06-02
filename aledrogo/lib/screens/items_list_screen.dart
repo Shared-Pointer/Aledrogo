@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:io';
 import '../database.dart';
 import '../item.dart';
 import '../user_repository.dart';
@@ -129,94 +130,166 @@ class _ItemListScreenState extends State<ItemListScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Lista przedmiotów"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.shopping_cart),
-            onPressed: () {
-              context.push('/purchasedItems');
-            },
-          ),
-        ],
+Widget _buildSearchField() {
+  return TextField(
+    decoration: InputDecoration(
+      hintText: 'Szukaj po tytule...',
+      prefixIcon: Icon(Icons.search),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
-      body: Padding(
+      filled: true,
+      fillColor: Colors.white,
+    ),
+    onChanged: (value) {
+      setState(() {
+        searchQuery = value;
+        _applyFilters();
+      });
+    },
+  );
+}
+
+Widget _buildDropdown(List<String> items, String selectedValue, Function(String) onChanged) {
+  return Container(
+    padding: EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.grey.shade300),
+    ),
+    child: DropdownButton<String>(
+      value: selectedValue,
+      isExpanded: true,
+      underline: SizedBox(),
+      icon: Icon(Icons.arrow_drop_down),
+      onChanged: (value) {
+        if (value != null) onChanged(value);
+      },
+      items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+    ),
+  );
+}
+
+Widget _buildItemCard(Item item) {
+  return Card(
+    elevation: 3,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    margin: EdgeInsets.only(bottom: 12),
+    child: InkWell(
+      onTap: () {
+        context.push('/itemDetails/${item.id}');
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(
+        child: Row(
           children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Szukaj po tytule',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
-              ),
-              onChanged: (value) {
-                searchQuery = value;
-                _applyFilters();
-              },
-            ),
-            SizedBox(height: 12),
-            DropdownButton<String>(
-              value: selectedCategory,
-              onChanged: (value) {
-                if (value != null) {
-                  selectedCategory = value;
-                  _applyFilters();
-                }
-              },
-              items: categories.map((cat) {
-                return DropdownMenuItem<String>(
-                  value: cat,
-                  child: Text(cat),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 12),
-            DropdownButton<String>(
-              value: selectedSort,
-              onChanged: (value) {
-                if (value != null) {
-                  selectedSort = value;
-                  _applyFilters();
-                }
-              },
-              items: sortOptions.map((opt) {
-                return DropdownMenuItem<String>(
-                  value: opt,
-                  child: Text(opt),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 12),
-            Expanded(
-              child: filteredItems.isEmpty
-                  ? Center(child: Text("Brak przedmiotów do wyświetlenia"))
-                  : ListView.builder(
-                      itemCount: filteredItems.length,
-                      itemBuilder: (context, index) {
-                        final item = filteredItems[index];
-                        return ListTile(
-                          title: Text("${item.title} (${item.category})"),
-                          subtitle: Text("${item.price} PLN"),
-                          trailing: item.isAuction
-                              ? null
-                              : ElevatedButton(
-                                  onPressed: () => _buyItem(context, item),
-                                  child: Text("Kup"),
-                                ),
-                          onTap: () {
-                            context.push('/itemDetails/${item.id}');
-                          },
-                        );
-                      },
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: item.image.toString().isNotEmpty
+                  ? Image.file(
+                      File(item.image),
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    )
+                  : Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey.shade200,
+                      child: Icon(Icons.image_not_supported,
+                          size: 40, color: Colors.grey),
                     ),
             ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Text(item.category, style: TextStyle(color: Colors.grey[600])),
+                  SizedBox(height: 4),
+                  Text("${item.price.toStringAsFixed(2)} PLN",
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+            if (!item.isAuction)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () => _buyItem(context, item),
+                child: Text("Kup"),
+              ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Color(0xFFF5F5F5),
+    appBar: AppBar(
+      title: Text("Lista przedmiotów"),
+      backgroundColor: Colors.deepPurple,
+      foregroundColor: Colors.white,
+      actions: [
+        IconButton(
+          icon: Icon(Icons.shopping_cart),
+          onPressed: () {
+            context.push('/purchasedItems');
+          },
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          _buildSearchField(),
+          SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(child: _buildDropdown(categories, selectedCategory, (val) {
+                setState(() => selectedCategory = val);
+                _applyFilters();
+              })),
+              SizedBox(width: 8),
+              Expanded(child: _buildDropdown(sortOptions, selectedSort, (val) {
+                setState(() => selectedSort = val);
+                _applyFilters();
+              })),
+            ],
+          ),
+          SizedBox(height: 16),
+          Expanded(
+            child: filteredItems.isEmpty
+                ? Center(child: Text("Brak przedmiotów do wyświetlenia"))
+                : ListView.builder(
+                    itemCount: filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredItems[index];
+                      return _buildItemCard(item);
+                    },
+                  ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 }

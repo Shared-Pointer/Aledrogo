@@ -19,7 +19,7 @@ enum CategoryLabel {
   elektronika('Elektronika'),
   obuwe('Obuwie'),
   toys('Zabawki'),
-  collectioner_items('Kolekjonerskie'),
+  collectioner_items('Kolekcjonerskie'),
   appliances('AGD/RTV'),
   games('Konsole i Gry'),
   other('Inne');
@@ -89,79 +89,154 @@ class _AddItemScreenState extends State<AddItemScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Dodaj przedmiot")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _titleController,
-                decoration: InputDecoration(labelText: "Tytuł"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Wprowadź tytuł";
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: InputDecoration(labelText: "Opis"),
-              ),
-              Semantics(
-                label: 'image_picker',
-                child: FloatingActionButton(
-                  onPressed: () {
-                    _onImageButtonPressed(ImageSource.gallery);
-                  },
-                  heroTag: 'image0',
-                  tooltip: 'Pick Image from gallery',
-                  child: const Icon(Icons.photo),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Dodaj przedmiot"),
+    ),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: "Tytuł",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.title),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Wprowadź tytuł";
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        labelText: "Opis",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                      maxLines: 3,
+                    ),
+                  ],
                 ),
               ),
-              if (_imageFile != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Image.file(
-                    File(_imageFile!.path),
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
+            ),
+
+            SizedBox(height: 16),
+
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.image, color: Theme.of(context).primaryColor),
+                        SizedBox(width: 10),
+                        Text("Zdjęcie", style: Theme.of(context).textTheme.titleMedium),
+                        Spacer(),
+                        ElevatedButton.icon(
+                          onPressed: () => _onImageButtonPressed(ImageSource.gallery),
+                          icon: Icon(Icons.photo_library),
+                          label: Text("Wybierz"),
+                        ),
+                      ],
+                    ),
+                    if (_imageFile != null) ...[
+                      SizedBox(height: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.file(
+                          File(_imageFile!.path),
+                          width: double.infinity,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              TextFormField(
-                controller: _priceController,
-                decoration: InputDecoration(labelText: "Cena"),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || double.tryParse(value) == null) {
-                    return "Wprowadź poprawną cenę";
-                  }
-                  return null;
-                },
               ),
-              DropdownMenu<CategoryLabel>(
-                initialSelection: CategoryLabel.other,
-                onSelected: (CategoryLabel? category) {
-                  setState(() {
-                    _selectedCategory = category?.label;
-                  });
-                },
-                dropdownMenuEntries: CategoryLabel.entries,
+            ),
+
+            SizedBox(height: 16),
+
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _priceController,
+                      decoration: InputDecoration(
+                        labelText: "Cena",
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || double.tryParse(value) == null) {
+                          return "Wprowadź poprawną cenę";
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    DropdownMenu<CategoryLabel>(
+                      initialSelection: CategoryLabel.other,
+                      dropdownMenuEntries: CategoryLabel.entries,
+                      onSelected: (CategoryLabel? category) {
+                        setState(() {
+                          _selectedCategory = category?.label;
+                        });
+                      },
+                      label: Text("Kategoria"),
+                      inputDecorationTheme: InputDecorationTheme(
+                        border: OutlineInputBorder(),
+                        prefixIconColor: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 20),
-              ElevatedButton(
+            ),
+
+            SizedBox(height: 24),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: Icon(Icons.add),
+                label: Text("Dodaj przedmiot", style: TextStyle(fontSize: 16)),
                 onPressed: _addItem,
-                child: Text("Dodaj"),
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

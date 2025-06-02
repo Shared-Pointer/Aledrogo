@@ -54,55 +54,119 @@ class ItemScreen extends StatelessWidget {
     context.pushReplacement('/purchasedItems');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Szczegóły przedmiotu')),
-      body: FutureBuilder<Item>(
-        future: fetchItemDetail(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Błąd: ${snapshot.error}"));
-          } else if (snapshot.hasData) {
-            final item = snapshot.data!;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Tytuł: ${item.title}', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 16),
-                  SizedBox(height: 16),
-                    item.image.isNotEmpty
-                        ? Image.file(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: Text('Szczegóły przedmiotu')),
+    body: FutureBuilder<Item>(
+      future: fetchItemDetail(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text("Błąd: ${snapshot.error}"));
+        } else if (snapshot.hasData) {
+          final item = snapshot.data!;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Text(
+                  item.title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 16),
+
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: item.image.isNotEmpty
+                      ? Image.file(
                           File(item.image),
+                          width: double.infinity,
+                          height: 250,
                           fit: BoxFit.cover,
                         )
-                        : Container(
-                            height: 200,
-                            color: Colors.grey[300],
-                            child: Center(child: Text('Brak obrazu')),
-                          ),
-                  Text('Opis: ${item.description}', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 16),
-                  Text('Cena: ${item.price} zł', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 16),
-                  Text('Kategoria: ${item.category}', style: TextStyle(fontSize: 16)),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () => _buyItem(context, item),
-                    child: Text("Kup"),
+                      : Container(
+                          width: double.infinity,
+                          height: 250,
+                          color: Colors.grey[300],
+                          child: Icon(Icons.image_not_supported, size: 80, color: Colors.grey[600]),
+                        ),
+                ),
+
+                SizedBox(height: 24),
+
+                Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        _infoRow(Icons.description, "Opis", item.description),
+                        Divider(),
+                        _infoRow(Icons.category, "Kategoria", item.category),
+                        Divider(),
+                        _infoRow(Icons.monetization_on, "Cena", "${item.price.toStringAsFixed(2)} zł"),
+                        if (item.quantity > 0) ...[
+                          Divider(),
+                          _infoRow(Icons.inventory_2, "Dostępna ilość", "${item.quantity} szt."),
+                        ],
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            );
-          } else {
-            return Center(child: Text("Brak danych dla przedmiotu o ID: $itemId"));
-          }
-        },
+                ),
+
+                SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: Icon(Icons.shopping_cart, color: Colors.white),
+                    label: Text(
+                      "Kup teraz",
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    onPressed: item.quantity > 0 ? () => _buyItem(context, item) : null,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: item.quantity > 0
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey,
+                      foregroundColor: Colors.white, // <-- kolor tekstu/ikony
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Center(child: Text("Brak danych dla przedmiotu o ID: $itemId"));
+        }
+      },
+    ),
+  );
+}
+
+Widget _infoRow(IconData icon, String label, String value) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Icon(icon, color: Colors.blueAccent),
+      SizedBox(width: 12),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text(value.isNotEmpty ? value : "-", style: TextStyle(color: Colors.grey[700])),
+          ],
+        ),
       ),
-    );
-  }
+    ],
+  );
+}
 }
